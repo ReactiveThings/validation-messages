@@ -1,0 +1,101 @@
+
+    <testcase name="rt-validation-messages -> ngModel">
+        <form>
+            <input type="text" required name="title" [(ngModel)]="title" #titleControl1="ngModel" />
+            <rt-validation-messages [control]="titleControl1"></rt-validation-messages>
+        </form>
+    </testcase>
+    <testcase name="rt-validation-messages -> formControlName">
+        <div [formGroup]="form">
+            <input type="text" name="title" formControlName="title" />
+            <rt-validation-messages [control]="form.controls['title']"></rt-validation-messages>
+        </div>
+    </testcase>
+    <testcase name="rt-validation-messages -> formControl">
+        <div [formGroup]="form">
+            <input type="text" name="title" [formControl]="form.controls['title']" />
+            <rt-validation-messages [control]="form.controls['title']"></rt-validation-messages>
+        </div>
+    </testcase>
+    <testcase name="rt-validation-messages -> formGroup">
+        <div [formGroup]="form">
+            <input type="text" name="title" formControlName="title" />
+            <rt-validation-messages [control]="form"></rt-validation-messages>
+        </div>
+    </testcase>
+    <testcase name="rt-validation-messages -> shows custom message">
+        <form>
+            <input type="text" required name="title" [(ngModel)]="title" #titleControl2="ngModel" />
+            <rt-validation-messages [control]="titleControl2">
+                <rt-validation-message validator="required" message="Field is required"></rt-validation-message>
+            </rt-validation-messages>
+        </form>
+    </testcase>
+    <testcase name="rt-validation-messages -> shows message with custom parameters">
+        <form>
+            <input type="text" required name="title" [(ngModel)]="title" #titleControl3="ngModel" />
+            <rt-validation-messages [control]="titleControl3">
+                <rt-validation-message validator="required" parameters="Title"></rt-validation-message>
+            </rt-validation-messages>
+        </form>
+    </testcase>
+    <testcase name="rt-validation-messages -> shows message in custom template">
+            <ng-template #customTemplate let-message>
+                <div class="rt-custom-template-message" style="color: yellow"> {{message}}</div>
+            </ng-template>
+            <form>
+                <input type="text" required name="title" [(ngModel)]="title" #titleControl4="ngModel" />
+                <rt-validation-messages [control]="titleControl4">
+                    <rt-validation-message validator="required" [template]="customTemplate"></rt-validation-message>
+                </rt-validation-messages>
+            </form>
+        </testcase>
+    <testcase name="rt-validation-messages -> shows message in custom inline template">
+            <form>
+                <input type="text" required name="title" [(ngModel)]="title" #titleControl5="ngModel" />
+                <rt-validation-messages [control]="titleControl5">
+                    <ng-template rt-validation-message validator="required" let-message>
+                        <div class="rt-custom-template-message" style="color: yellow">{{message}}</div>
+                    </ng-template>
+                </rt-validation-messages>
+            </form>
+        </testcase>
+    <testcase name="rt-validation-container -> ngModel">
+        <form>
+            <rt-validation-container>
+                <input type="text" required name="title" [(ngModel)]="title" />
+            </rt-validation-container>
+        </form>
+    </testcase>
+    <testcase name="rt-validation-container -> formControlName">
+        <div [formGroup]="form">
+            <rt-validation-container>
+                <input type="text" name="title" formControlName="title" />
+            </rt-validation-container>
+        </div>
+    </testcase>
+    <testcase name="rt-validation-container -> formControl">
+        <div [formGroup]="form">
+            <rt-validation-container>
+                <input type="text" name="title" [formControl]="form.controls['title']" />
+            </rt-validation-container>
+        </div>
+    </testcase>
+    <testcase name="rt-validation-container -> custom validation-message">
+        <form>
+            <rt-validation-container>
+                <input type="text" required name="title" [(ngModel)]="title" />
+                <rt-validation-message message="Field is required"></rt-validation-message>
+            </rt-validation-container>
+        </form>
+    </testcase>
+    <testcase name="rt-validation-container -> custom message inside rt-validation-messages">
+        <form>
+            <rt-validation-container>
+                <rt-validation-messages>
+                    <rt-validation-message message="Field is required"></rt-validation-message>
+                </rt-validation-messages>
+                <input type="text" required name="title" [(ngModel)]="title" />
+            </rt-validation-container>
+        </form>
+    </testcase>

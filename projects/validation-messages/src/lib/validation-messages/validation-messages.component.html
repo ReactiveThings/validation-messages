@@ -1,0 +1,12 @@
+<ng-template #defaultMessageTemplate let-message>
+    <span class="rt-validation-message"> {{message}}</span>
+</ng-template>
+<ng-container *ngIf="shouldShowValidationMessages()">
+    <ng-container *ngFor="let error of control.errors | keys">
+        <ng-container *ngIf="error.value">
+            <ng-container 
+                *ngTemplateOutlet="getTemplate(error.key) ? getTemplate(error.key) : defaultMessageTemplate;context:{$implicit: getMessage(error) }">
+            </ng-container>
+        </ng-container>
+    </ng-container>
+</ng-container>
