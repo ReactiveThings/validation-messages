@@ -19,10 +19,10 @@ export class ReactiveCommandDirective implements OnDestroy {
 
     @Input('rtCommand')
     set command(value: Command<any, any>) {
-        this.unsubscribeCanExecute();
+        this.unsubscribeDisableSubscription();
         this._command = value;
-        if (value) {
-            this.subscribeCanExecute();
+        if (this._command) {
+            this.disableElementSubscription = this.createDisableSubscription();
         }
     }
     @Input() public commandParameter: any = null;
@@ -34,9 +34,6 @@ export class ReactiveCommandDirective implements OnDestroy {
     get disableElement(): boolean {
         return this._disableElement;
     }
-
-    private canExecute = true;
-
     @Input()
     set disableElement(value: boolean) {
         this._disableElement = value;
@@ -45,11 +42,10 @@ export class ReactiveCommandDirective implements OnDestroy {
         }
     }
 
-    private commandSubscription: Subscription;
-    private elementRef: ElementRef;
+    private disableElementSubscription: Subscription;
+    private canExecute = true;
 
-    constructor( @Inject(ElementRef) elementRef: ElementRef<DisableableElement>) {
-        this.elementRef = elementRef;
+    constructor(@Inject(ElementRef) private elementRef: ElementRef<DisableableElement>) {
     }
 
     @HostListener('click', ['$event'])
@@ -60,13 +56,13 @@ export class ReactiveCommandDirective implements OnDestroy {
         if(this.stopPropagation) {
             $event.stopPropagation();
         }
-        if (this.canExecute) {
+        if (this.canExecute && this.command) {
             this.command.executeAsync(this.commandParameter);
         }
     }
 
-    private subscribeCanExecute() {
-        this.commandSubscription = this._command.canExecute
+    private createDisableSubscription() {
+        return this._command.canExecute
             .combineLatest(
             this._command.isExecuting,
             (canExecute, isExecuting) => ({ canExecute: canExecute, isExecuting: isExecuting }))
@@ -80,9 +76,9 @@ export class ReactiveCommandDirective implements OnDestroy {
             });
     }
 
-    private unsubscribeCanExecute() {
-        if (this.commandSubscription) {
-            this.commandSubscription.unsubscribe();
+    private unsubscribeDisableSubscription() {
+        if (this.disableElementSubscription) {
+            this.disableElementSubscription.unsubscribe();
         }
     }
 
@@ -95,6 +91,6 @@ export class ReactiveCommandDirective implements OnDestroy {
     }
 
     public ngOnDestroy() {
-        this.unsubscribeCanExecute();
+        this.unsubscribeDisableSubscription();
     }
 }
