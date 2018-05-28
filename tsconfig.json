@@ -19,6 +19,9 @@
     "paths": {
       "@reactivethings/validation-messages": [
         "dist/validation-messages"
+      ],
+      "reactive-command": [
+        "dist/reactive-command"
       ]
     }
   }
