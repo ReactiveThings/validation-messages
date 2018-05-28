@@ -4,16 +4,16 @@ import { ReactiveCommand } from './reactive-command.service';
 import { Subscription } from 'rxjs/Subscription';
 
 @Directive({
-    selector: '[ascCommand]',
+    selector: '[rtCommand]',
     exportAs: 'command'
 })
-export class CommandDirective implements OnDestroy {
+export class ReactiveCommandDirective implements OnDestroy {
     private _command: ReactiveCommand<any, any>;
     get command(): ReactiveCommand<any, any> {
         return this._command;
     }
 
-    @Input('ascCommand')
+    @Input('rtCommand')
     set command(value: ReactiveCommand<any, any>) {
         this.unsubscribeCanExecute();
         this._command = value;

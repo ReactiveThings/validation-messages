@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
-import { ReactiveCommandComponent } from './reactive-command.component';
+import { ReactiveCommandDirective } from './reactive-command.component';
 
 @NgModule({
   imports: [
   ],
-  declarations: [ReactiveCommandComponent],
-  exports: [ReactiveCommandComponent]
+  declarations: [ReactiveCommandDirective],
+  exports: [ReactiveCommandDirective]
 })
 export class ReactiveCommandModule { }
