@@ -1,20 +1,24 @@
 import { Directive, OnDestroy, HostListener, ElementRef, Inject, Input } from '@angular/core';
 
-import { ReactiveCommand } from './reactive-command.service';
+import { Command } from './reactive-command.service';
 import { Subscription } from 'rxjs/Subscription';
+
+interface DisableableElement {
+    disabled: boolean;
+}
 
 @Directive({
     selector: '[rtCommand]',
     exportAs: 'command'
 })
 export class ReactiveCommandDirective implements OnDestroy {
-    private _command: ReactiveCommand<any, any>;
-    get command(): ReactiveCommand<any, any> {
+    private _command: Command<any, any>;
+    get command(): Command<any, any> {
         return this._command;
     }
 
     @Input('rtCommand')
-    set command(value: ReactiveCommand<any, any>) {
+    set command(value: Command<any, any>) {
         this.unsubscribeCanExecute();
         this._command = value;
         if (value) {
@@ -24,6 +28,7 @@ export class ReactiveCommandDirective implements OnDestroy {
     @Input() public commandParameter: any = null;
 
     @Input() public preventDefault = true;
+    @Input() public stopPropagation = true;
 
     private _disableElement = true;
     get disableElement(): boolean {
@@ -43,7 +48,7 @@ export class ReactiveCommandDirective implements OnDestroy {
     private commandSubscription: Subscription;
     private elementRef: ElementRef;
 
-    constructor( @Inject(ElementRef) elementRef: ElementRef) {
+    constructor( @Inject(ElementRef) elementRef: ElementRef<DisableableElement>) {
         this.elementRef = elementRef;
     }
 
@@ -52,18 +57,18 @@ export class ReactiveCommandDirective implements OnDestroy {
         if (this.preventDefault) {
             $event.preventDefault();
         }
-
-        $event.stopPropagation();
+        if(this.stopPropagation) {
+            $event.stopPropagation();
+        }
         if (this.canExecute) {
-            setTimeout(() => this.command.Execute(this.commandParameter));
+            this.command.executeAsync(this.commandParameter);
         }
     }
 
     private subscribeCanExecute() {
-        this.commandSubscription = this._command.CanExecute
-            .startWith(false)
+        this.commandSubscription = this._command.canExecute
             .combineLatest(
-            this._command.IsExecuting,
+            this._command.isExecuting,
             (canExecute, isExecuting) => ({ canExecute: canExecute, isExecuting: isExecuting }))
             .subscribe(p => {
                 this.canExecute = p.canExecute;

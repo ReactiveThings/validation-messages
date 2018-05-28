@@ -7,7 +7,7 @@ import { PartialObserver } from 'rxjs';
 import { toSubscriber } from 'rxjs/internal/util/toSubscriber';
 
 // non-generic reactive command functionality
-export interface IReactiveCommand {
+export interface CommandExecutionInfo {
 
     canExecute: Observable<boolean>;
 
@@ -16,17 +16,16 @@ export interface IReactiveCommand {
     thrownExceptions: Observable<any>;
 }
 
-export interface ReactiveCommandBase<TParam, TResult> extends IReactiveCommand, Subscribable<TResult> {
-    executeObservable(parameter: TParam): Observable<TResult>;
+export interface Command<TParam, TResult> extends CommandExecutionInfo, Subscribable<TResult> {
+    execute(parameter?: TParam): Observable<TResult>;
 
-    execute(parameter: TParam): void;
+    executeAsync(parameter?: TParam) : Promise<TResult>;
 }
 
 enum ExecutionDemarcation {
     Begin,
-    EndWithResult,
-    EndWithException,
-    Ended
+    Result,
+    End
 }
 
 class ExecutionInfo<TResult> {
@@ -51,47 +50,52 @@ class ExecutionInfo<TResult> {
     }
 
     public static CreateResult<TResult>(result: TResult): ExecutionInfo<TResult> {
-        return new ExecutionInfo(ExecutionDemarcation.EndWithResult, result);
+        return new ExecutionInfo(ExecutionDemarcation.Result, result);
     }
 
-    public static CreateFail<TResult>(): ExecutionInfo<TResult> {
-        return new ExecutionInfo(ExecutionDemarcation.EndWithException);
-    }
-
-    public static CreateEnded<TResult>(): ExecutionInfo<TResult> {
-        return new ExecutionInfo(ExecutionDemarcation.Ended);
+    public static CreateEnd<TResult>(): ExecutionInfo<TResult> {
+        return new ExecutionInfo(ExecutionDemarcation.End);
     }
 }
 
-export class ReactiveCommand<TParam, TResult> extends Observable<TResult> implements ReactiveCommandBase<TParam, TResult> {
+export class ReactiveCommand<TParam, TResult> implements Command<TParam, TResult> {
     private _execute: (param: TParam) => Observable<TResult>;
 
     private _isExecuting: Observable<boolean>;
     private _canExecute: Observable<boolean>;
-    private results: Observable<TResult | undefined>;
-    private exceptions: Subject<any>;
+    private _results: Observable<TResult | undefined>;
+    private _exceptions: Subject<any>;
     private _canExecuteSubscription: Subscription;
-    private _executeSubscribtion: Subscription;
-    private synchronizedExecutionInfo: Subject<ExecutionInfo<TResult>>;
+    private _executionInfo: Subject<ExecutionInfo<TResult>>;
 
     constructor(_execute: (param: TParam) => Observable<TResult>, _canExecute: Observable<boolean>) {
-        super();
         if (!_execute) {
-            throw new Error('ArgumentNullException(_execute)');
+            throw new Error('execute is not defined');
         }
 
         if (!_canExecute) {
-            throw new Error('ArgumentNullException(_canExecute)');
+            throw new Error('can execute is not defined');
         }
         this._execute = _execute;
-        this.synchronizedExecutionInfo = new Subject<ExecutionInfo<TResult>>();
-        this.exceptions = new Subject<any>();
-        this.exceptions.subscribe(err => {
+        this._executionInfo = new Subject<ExecutionInfo<TResult>>();
+        this._exceptions = new Subject<any>();
+        this._exceptions.subscribe(err => {
             console.error(err);
         });
         this._isExecuting = this
-            .synchronizedExecutionInfo
-            .map(x => x.Demarcation === ExecutionDemarcation.Begin)
+            ._executionInfo
+            .scan((acc, next) => {
+                  if (next.Demarcation == ExecutionDemarcation.Begin) {
+                      return acc + 1;
+                  }
+
+                  if (next.Demarcation == ExecutionDemarcation.End) {
+                      return acc - 1;
+                  }
+
+                  return acc;
+              },0)
+            .map(inFlightCount => inFlightCount > 0)
             .startWith(false)
             .distinctUntilChanged()
             .publishReplay(1)
@@ -99,7 +103,7 @@ export class ReactiveCommand<TParam, TResult> extends Observable<TResult> implem
 
         this._canExecute = _canExecute
             .catch(ex => {
-                this.exceptions.next(ex);
+                this._exceptions.next(ex);
                 return Observable.of(false);
             })
             .startWith(false)
@@ -108,24 +112,12 @@ export class ReactiveCommand<TParam, TResult> extends Observable<TResult> implem
             .publishReplay(1)
             .refCount();
 
-        this.results = this
-            .synchronizedExecutionInfo
-            .filter(x => x.Demarcation === ExecutionDemarcation.EndWithResult)
+        this._results = this
+            ._executionInfo
+            .filter(x => x.Demarcation === ExecutionDemarcation.Result)
             .map(x => x.Result);
 
         this._canExecuteSubscription = this._canExecute.subscribe();
-    }
-
-    public static create<TParam, TResult>(_execute: (param: TParam) => Observable<TResult>, _canExecute?: Observable<boolean>): ReactiveCommand<TParam, TResult> {
-        return new ReactiveCommand<TParam, TResult>(
-            _execute,
-            _canExecute || Observable.of(true));
-    }
-
-    public static action(_canExecute?: Observable<boolean>): ReactiveCommand<any, any> {
-        return new ReactiveCommand<any, any>(
-            p => Observable.of(p),
-            _canExecute || Observable.of(true));
     }
 
     get canExecute(): Observable<boolean> {
@@ -137,56 +129,66 @@ export class ReactiveCommand<TParam, TResult> extends Observable<TResult> implem
     }
 
     get thrownExceptions(): Observable<any> {
-        return this.exceptions;
+        return this._exceptions;
     }
 
     public subscribe(observerOrNext?: PartialObserver<TResult> | ((value: TResult) => void),
             error?: (error: any) => void,
             complete?: () => void): Subscription {
-      return this.results.subscribe(toSubscriber(observerOrNext));
+      return this._results.subscribe(toSubscriber(observerOrNext));
     }
 
-    public executeObservable(parameter: TParam): Observable<TResult> {
+    public execute(parameter?: TParam): Observable<TResult> {
         try {
             return Observable
                 .defer(
                 () => {
-                    this.synchronizedExecutionInfo.next(ExecutionInfo.CreateBegin<TResult>());
+                    this._executionInfo.next(ExecutionInfo.CreateBegin<TResult>());
                     return Observable.empty();
                 })
                 .concat(this._execute(parameter))
-                .do(
-                result => this.synchronizedExecutionInfo.next(ExecutionInfo.CreateResult(result)),
-                () => this.synchronizedExecutionInfo.next(ExecutionInfo.CreateEnded<TResult>()),
-                () => this.synchronizedExecutionInfo.next(ExecutionInfo.CreateEnded<TResult>()))
+                .do(result => this._executionInfo.next(ExecutionInfo.CreateResult(result)))
                 .catch(
                 ex => {
-                    this.synchronizedExecutionInfo.next(ExecutionInfo.CreateFail<TResult>());
-                    this.exceptions.next(ex);
+                    this._exceptions.next(ex);
                     return Observable.throw(ex);
-                })
+                }).finally(() => this._executionInfo.next(ExecutionInfo.CreateEnd<TResult>()))
                 .publishLast()
                 .refCount();
         } catch (ex) {
-            this.exceptions.next(ex);
+            this._exceptions.next(ex);
             return Observable.throw(ex);
         }
     }
 
-    public execute(parameter: TParam) {
-        if (this._executeSubscribtion) {
-            this._executeSubscribtion.unsubscribe();
-        }
-        this._executeSubscribtion = Observable.timer().switchMap(() => this.executeObservable(parameter).take(1)).subscribe();
+    public executeAsync(parameter?: TParam) : Promise<TResult> {
+        return this.execute(parameter).toPromise();
     }
 
-    public dispose(): any {
-        this.synchronizedExecutionInfo.unsubscribe();
-        this.exceptions.unsubscribe();
-        this._canExecuteSubscription.unsubscribe();
-        if (this._executeSubscribtion) {
-            this._executeSubscribtion.unsubscribe();
-        }
+    // todo it is necessary
+    // public dispose(): void {
+    //     this._executionInfo.unsubscribe();
+    //     this._exceptions.unsubscribe();
+    //     this._canExecuteSubscription.unsubscribe();
+    // }
+
+    
+    public static createFromObservable<TParam, TResult>(_execute: (param: TParam) => Observable<TResult>, _canExecute?: Observable<boolean>): Command<TParam, TResult> {
+      return new ReactiveCommand<TParam, TResult>(
+          _execute,
+          _canExecute || Observable.of(true));
+    }
+
+    public static createFromPromise<TParam, TResult>(_execute: (param: TParam) => Promise<TResult>, _canExecute?: Observable<boolean>): Command<TParam, TResult> {
+      return new ReactiveCommand<TParam, TResult>(
+          (param) => Observable.fromPromise(_execute(param)),
+          _canExecute || Observable.of(true));
+    }
+
+    public static create(_canExecute?: Observable<boolean>): Command<any, any> {
+        return ReactiveCommand.createFromObservable<any, any>(
+            p => Observable.of(p),
+            _canExecute || Observable.of(true));
     }
 
 }
