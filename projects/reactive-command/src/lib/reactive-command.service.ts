@@ -6,65 +6,15 @@ import { Subscriber } from 'rxjs/Subscriber';
 
 // non-generic reactive command functionality
 export interface IReactiveCommand {
-    /// <summary>
-    /// An observable whose value indicates whether the command can currently execute.
-    /// </summary>
-    /// <remarks>
-    /// The value provided by this observable is governed both by any <c>canExecute</c> observable provided during
-    /// command creation, as well as the current execution status of the command. A command that is currently executing
-    /// will always yield <c>false</c> from this observable, even if the <c>canExecute</c> pipeline is currently <c>true</c>.
-    /// </remarks>
+
     CanExecute: Observable<boolean>;
 
-    /// <summary>
-    /// An observable whose value indicates whether the command is currently executing.
-    /// </summary>
-    /// <remarks>
-    /// This observable can be particularly useful for updating UI, such as showing an activity indicator whilst a command
-    /// is executing.
-    /// </remarks>
     IsExecuting: Observable<boolean>;
 
-    /// <summary>
-    /// An observable that ticks any exceptions in command execution logic.
-    /// </summary>
-    /// <remarks>
-    /// Any exceptions that are not observed via this observable will propagate out and cause the application to be torn
-    /// down. Therefore, you will always want to subscribe to this observable if you expect errors could occur (e.g. if
-    /// your command execution includes network activity).
-    /// </remarks>
     ThrownExceptions: Observable<any>;
 }
 
 export interface ReactiveCommandBase<TParam, TResult> extends IReactiveCommand, Subscribable<TResult> {
-    /// <summary>
-    /// Gets an observable that, when subscribed, executes this command.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Invoking this method will return a cold (lazy) observable that, when subscribed, will execute the logic
-    /// encapsulated by the command. It is worth restating that the returned observable is lazy. Nothing will
-    /// happen if you call <c>Execute</c> and neglect to subscribe (directly or indirectly) to the returned observable.
-    /// </para>
-    /// <para>
-    /// If no parameter value is provided, a default value of type <typeparamref name="TParam"/> will be passed into
-    /// the execution logic.
-    /// </para>
-    /// <para>
-    /// Any number of subscribers can subscribe to a given execution observable and the execution logic will only
-    /// run once. That is, the result is broadcast to those subscribers.
-    /// </para>
-    /// <para>
-    /// In those cases where execution fails, there will be no result value. Instead, the failure will tick through the
-    /// <see cref="ThrownExceptions"/> observable.
-    /// </para>
-    /// </remarks>
-    /// <param name="parameter">
-    /// The parameter to pass into command execution.
-    /// </param>
-    /// <returns>
-    /// An observable that will tick the single result value if and when it becomes available.
-    /// </returns>
     ExecuteObservable(parameter: TParam): Observable<TResult>;
 
     Execute(parameter: TParam): void;
@@ -111,22 +61,6 @@ class ExecutionInfo<TResult> {
     }
 }
 
-/// <summary>
-/// Encapsulates a user interaction behind a reactive interface.
-/// </summary>
-/// <remarks>
-/// <para>
-/// This class provides the bulk of the actual implementation for reactive commands. You should not create instances
-/// of this class directly, but rather via the static creation methods on the non-generic <see cref="ReactiveCommand"/>
-/// class.
-/// </para>
-/// </remarks>
-/// <typeparam name="TParam">
-/// The type of parameter values passed in during command execution.
-/// </typeparam>
-/// <typeparam name="TResult">
-/// The type of the values that are the result of command execution.
-/// </typeparam>
 export class ReactiveCommand<TParam, TResult> extends Observable<TResult> implements ReactiveCommandBase<TParam, TResult> {
     private execute: (param: TParam) => Observable<TResult>;
 
@@ -180,28 +114,6 @@ export class ReactiveCommand<TParam, TResult> extends Observable<TResult> implem
         this.canExecuteSubscription = this.canExecute.subscribe();
     }
 
-        /// <summary>
-    /// Creates a <see cref="ReactiveCommand{TParam, TResult}"/>
-    /// with asynchronous execution logic that takes a parameter of type <typeparamref name="TParam"/>.
-    /// </summary>
-    /// <param name="execute">
-    /// Provides an observable representing the command's asynchronous execution logic.
-    /// </param>
-    /// <param name="canExecute">
-    /// An optional observable that dictates the availability of the command for execution.
-    /// </param>
-    /// <param name="outputScheduler">
-    /// An optional scheduler that is used to surface events. Defaults to <c>RxApp.MainThreadScheduler</c>.
-    /// </param>
-    /// <returns>
-    /// The <c>ReactiveCommand</c> instance.
-    /// </returns>
-    /// <typeparam name="TParam">
-    /// The type of the parameter passed through to command execution.
-    /// </typeparam>
-    /// <typeparam name="TResult">
-    /// The type of the command's result.
-    /// </typeparam>
     public static Create<TParam, TResult>(execute: (param: TParam) => Observable<TResult>, canExecute?: Observable<boolean>): ReactiveCommand<TParam, TResult> {
         return new ReactiveCommand<TParam, TResult>(
             execute,
@@ -230,7 +142,7 @@ export class ReactiveCommand<TParam, TResult> extends Observable<TResult> implem
         return this.results.subscribe(subscriber);
     }
 
-    // tslint:disable-next-line:no-unnecessary-initializer
+
     public ExecuteObservable(parameter: TParam): Observable<TResult> {
         try {
             return Observable
