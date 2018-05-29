@@ -1,25 +1,25 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+// import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ReactiveCommandComponent } from './reactive-command.component';
+// import { ReactiveCommandDirective } from './reactive-command.component';
 
-describe('ReactiveCommandComponent', () => {
-  let component: ReactiveCommandComponent;
-  let fixture: ComponentFixture<ReactiveCommandComponent>;
+// describe('ReactiveCommandComponent', () => {
+//   let component: ReactiveCommandDirective;
+//   let fixture: ComponentFixture<ReactiveCommandDirective>;
 
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [ ReactiveCommandComponent ]
-    })
-    .compileComponents();
-  }));
+//   beforeEach(async(() => {
+//     TestBed.configureTestingModule({
+//       declarations: [ ReactiveCommandDirective ]
+//     })
+//     .compileComponents();
+//   }));
 
-  beforeEach(() => {
-    fixture = TestBed.createComponent(ReactiveCommandComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+//   beforeEach(() => {
+//     fixture = TestBed.createComponent(ReactiveCommandDirective);
+//     component = fixture.componentInstance;
+//     fixture.detectChanges();
+//   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-});
+//   it('should create', () => {
+//     expect(component).toBeTruthy();
+//   });
+// });
