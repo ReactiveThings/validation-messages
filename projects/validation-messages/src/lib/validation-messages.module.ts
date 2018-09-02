@@ -5,13 +5,14 @@ import { ValidationMessageDirective } from './validation-message.directive';
 import { KeysPipe } from './keys.pipe';
 import { ValidationContainerComponent } from './validation-container/validation-container.component';
 import { ValidationMessageService } from './validation-message.service';
+import { RequiredAsterixDirective } from './required-asterix/required-asterix.directive';
 
 @NgModule({
   imports: [
     CommonModule
   ],
-  declarations: [ValidationMessagesComponent, ValidationMessageDirective, KeysPipe, ValidationContainerComponent],
-  exports: [ValidationMessagesComponent, ValidationMessageDirective, ValidationContainerComponent],
+  declarations: [ValidationMessagesComponent, ValidationMessageDirective, KeysPipe, ValidationContainerComponent, RequiredAsterixDirective],
+  exports: [ValidationMessagesComponent, ValidationMessageDirective, ValidationContainerComponent, RequiredAsterixDirective],
   providers: [ValidationMessageService]
 })
 export class ValidationMessagesModule { }

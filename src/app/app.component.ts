@@ -8,7 +8,8 @@ import { FormBuilder, FormGroup, Validators, ValidationErrors } from '@angular/f
 })
 export class AppComponent {
   title = '';
-
+  required = false;
+  disabled = false;
   form: FormGroup;
 
   constructor(private fb: FormBuilder) {
@@ -29,5 +30,34 @@ export class AppComponent {
     {
       validator: Validators.compose([AppComponent.formGroupValidator])
     });
+  }
+
+  toogleRequired() {
+    this.required = !this.required;
+  }
+  toogleDisabled() {
+    this.disabled = !this.disabled;
+  }
+
+  
+  toogleRequiredReactive() {
+    const title = this.form.controls['title'];
+    if(!this.required) {
+      title.setValidators(Validators.required);
+    }else{
+      title.setValidators([]);
+    }
+    title.updateValueAndValidity();
+    this.toogleRequired();
+  }
+  toogleDisabledReactive() {
+    const title = this.form.controls['title'];
+    
+    if(!this.disabled) {
+      title.disable();
+    }else{
+      title.enable();
+    }
+    this.toogleDisabled();
   }
 }

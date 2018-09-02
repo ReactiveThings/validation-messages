@@ -5,6 +5,7 @@ import { AppComponent } from './app.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TestcaseComponent } from './testcase/testcase.component';
 import { ValidationMessagesModule } from '@reactivethings/validation-messages';
+
 class MyValidationMessageService
 {
   public getMessage(validator: string, parameters: any) : string {
@@ -15,7 +16,7 @@ class MyValidationMessageService
 @NgModule({
   declarations: [
     AppComponent,
-    TestcaseComponent,
+    TestcaseComponent
   ],
   imports: [
     BrowserModule,
