@@ -1,5 +1,5 @@
-import { Component, OnInit, ContentChild, ContentChildren, QueryList, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { NgModel, FormControlName, FormControl, FormControlDirective, AbstractControl, NgControl } from '@angular/forms';
+import { Component, ContentChild, ContentChildren, QueryList, ViewChild } from '@angular/core';
+import { NgModel, FormControlName, FormControlDirective, NgControl } from '@angular/forms';
 import { ValidationMessageDirective } from '../validation-message.directive';
 import { ValidationMessagesComponent } from '../validation-messages/validation-messages.component';
 
@@ -27,7 +27,7 @@ export class ValidationContainerComponent{
   @ContentChild(ValidationMessagesComponent)
   public customMessagesComponent: ValidationMessagesComponent;
 
-  constructor(private changeDetectorRef: ChangeDetectorRef) { }
+  constructor() { }
 
   public ngAfterContentInit() {
     if(this.customMessagesComponent) {

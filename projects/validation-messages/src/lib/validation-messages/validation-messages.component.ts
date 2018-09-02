@@ -1,12 +1,11 @@
-import { Component, OnInit, Input, ContentChildren, QueryList, TemplateRef, Optional } from '@angular/core';
-import { AbstractControl, NgForm, NgControl, FormControl } from '@angular/forms';
+import { Component, Input, ContentChildren, QueryList, TemplateRef, Optional } from '@angular/core';
+import { AbstractControl, NgForm } from '@angular/forms';
 import { ValidationMessageDirective } from '../validation-message.directive';
 import { ValidationMessageService } from '../validation-message.service';
 
 @Component({
     selector: 'rt-validation-messages',
-    templateUrl: './validation-messages.component.html',
-    styleUrls: ['./validation-messages.component.css']
+    templateUrl: './validation-messages.component.html'
 })
 export class ValidationMessagesComponent {
     @Input()
