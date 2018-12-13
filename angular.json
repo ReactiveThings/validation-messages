@@ -121,7 +121,7 @@
       "root": "projects/validation-messages",
       "sourceRoot": "projects/validation-messages/src",
       "projectType": "library",
-      "prefix": "lib",
+      "prefix": "rt",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",
@@ -161,7 +161,7 @@
       "root": "projects/reactive-command",
       "sourceRoot": "projects/reactive-command/src",
       "projectType": "library",
-      "prefix": "lib",
+      "prefix": "rt",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",

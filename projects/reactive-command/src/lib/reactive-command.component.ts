@@ -53,7 +53,7 @@ export class ReactiveCommandDirective implements OnDestroy {
         if (this.preventDefault) {
             $event.preventDefault();
         }
-        if(this.stopPropagation) {
+        if (this.stopPropagation) {
             $event.stopPropagation();
         }
         if (this.canExecute && this.command) {

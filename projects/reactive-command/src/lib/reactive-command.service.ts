@@ -1,8 +1,6 @@
-// tslint:disable:max-line-length
-// tslint:disable-next-line:import-blacklist
-import { Observable, Subject, Subscription } from 'rxjs/Rx';
-import { Subscribable } from 'rxjs/Observable';
-import { PartialObserver } from 'rxjs';
+
+import { Subject, Subscription ,  Subscribable ,  PartialObserver, EMPTY, throwError, of, from } from 'rxjs';
+import { Observable} from 'rxjs-compat';
 import { toSubscriber } from 'rxjs/internal/util/toSubscriber';
 
 // non-generic reactive command functionality
@@ -28,12 +26,8 @@ enum ExecutionDemarcation {
 }
 
 class ExecutionInfo<TResult> {
-    private demarcation: ExecutionDemarcation;
-    private result?: TResult;
 
-    constructor(demarcation: ExecutionDemarcation, result?: TResult) {
-        this.demarcation = demarcation;
-        this.result = result;
+    constructor(private readonly demarcation: ExecutionDemarcation, private readonly result?: TResult) {
     }
 
     get Demarcation(): ExecutionDemarcation {
@@ -58,14 +52,14 @@ class ExecutionInfo<TResult> {
 }
 
 export class ReactiveCommand<TParam, TResult> implements Command<TParam, TResult> {
-    private _execute: (param: TParam) => Observable<TResult>;
+    private readonly _execute: (param: TParam) => Observable<TResult>;
 
-    private _isExecuting: Observable<boolean>;
-    private _canExecute: Observable<boolean>;
-    private _results: Observable<TResult | undefined>;
-    private _exceptions: Subject<any>;
-    private _canExecuteSubscription: Subscription;
-    private _executionInfo: Subject<ExecutionInfo<TResult>>;
+    private readonly _isExecuting: Observable<boolean>;
+    private readonly _canExecute: Observable<boolean>;
+    private readonly _results: Observable<TResult | undefined>;
+    private readonly _exceptions: Subject<any>;
+    private readonly _canExecuteSubscription: Subscription;
+    private readonly _executionInfo: Subject<ExecutionInfo<TResult>>;
 
     constructor(_execute: (param: TParam) => Observable<TResult>, _canExecute: Observable<boolean>) {
         if (!_execute) {
@@ -84,22 +78,22 @@ export class ReactiveCommand<TParam, TResult> implements Command<TParam, TResult
         this._isExecuting = this
             ._executionInfo
             .scan((acc, next) => {
-                  if (next.Demarcation === ExecutionDemarcation.Begin) {
-                      return acc + 1;
-                  }
+              if (next.Demarcation === ExecutionDemarcation.Begin) {
+                  return acc + 1;
+              }
 
-                  if (next.Demarcation === ExecutionDemarcation.End) {
-                      return acc - 1;
-                  }
-                  return acc;
-              }, 0)
+              if (next.Demarcation === ExecutionDemarcation.End) {
+                  return acc - 1;
+              }
+              return acc;
+          }, 0)
             .map(inFlightCount => inFlightCount > 0)
             .startWith(false)
             .distinctUntilChanged()
             .publishReplay(1)
             .refCount();
 
-        this._canExecute = _canExecute
+            this._canExecute = _canExecute
             .catch(ex => {
                 this._exceptions.next(ex);
                 return Observable.of(false);
@@ -118,22 +112,26 @@ export class ReactiveCommand<TParam, TResult> implements Command<TParam, TResult
         this._canExecuteSubscription = this._canExecute.subscribe();
     }
 
-    public static createFromObservable<TParam, TResult>(_execute: (param: TParam) => Observable<TResult>, _canExecute?: Observable<boolean>): Command<TParam, TResult> {
+    public static createFromObservable<TParam, TResult>(
+      _execute: (param: TParam) => Observable<TResult>,
+      _canExecute?: Observable<boolean>): Command<TParam, TResult> {
       return new ReactiveCommand<TParam, TResult>(
           _execute,
-          _canExecute || Observable.of(true));
+          _canExecute || of(true));
     }
 
-    public static createFromPromise<TParam, TResult>(_execute: (param: TParam) => Promise<TResult>, _canExecute?: Observable<boolean>): Command<TParam, TResult> {
+    public static createFromPromise<TParam, TResult>(
+      _execute: (param: TParam) => Promise<TResult>,
+      _canExecute?: Observable<boolean>): Command<TParam, TResult> {
       return new ReactiveCommand<TParam, TResult>(
-          (param) => Observable.fromPromise(_execute(param)),
-          _canExecute || Observable.of(true));
+          (param) => from(_execute(param)),
+          _canExecute || of(true));
     }
 
     public static create(_canExecute?: Observable<boolean>): Command<any, any> {
         return ReactiveCommand.createFromObservable<any, any>(
-            p => Observable.of(p),
-            _canExecute || Observable.of(true));
+            p => of(p),
+            _canExecute || of(true));
     }
 
     get canExecute(): Observable<boolean> {
@@ -160,20 +158,20 @@ export class ReactiveCommand<TParam, TResult> implements Command<TParam, TResult
                 .defer(
                 () => {
                     this._executionInfo.next(ExecutionInfo.CreateBegin<TResult>());
-                    return Observable.empty();
+                    return EMPTY;
                 })
                 .concat(this._execute(parameter))
                 .do(result => this._executionInfo.next(ExecutionInfo.CreateResult(result)))
                 .catch(
                 ex => {
                     this._exceptions.next(ex);
-                    return Observable.throw(ex);
+                    return throwError(ex);
                 }).finally(() => this._executionInfo.next(ExecutionInfo.CreateEnd<TResult>()))
                 .publishLast()
                 .refCount();
         } catch (ex) {
             this._exceptions.next(ex);
-            return Observable.throw(ex);
+            return throwError(ex);
         }
     }
 

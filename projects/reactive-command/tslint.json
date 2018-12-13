@@ -1,17 +1,25 @@
 {
     "extends": "../../tslint.json",
+    "rulesDirectory": [
+      "../../node_modules/rxjs-tslint"
+    ],
     "rules": {
         "directive-selector": [
             true,
             "attribute",
-            "lib",
+            "rt",
             "camelCase"
         ],
         "component-selector": [
             true,
             "element",
-            "lib",
+            "rt",
             "kebab-case"
-        ]
+        ],
+        "rxjs-collapse-imports": true,
+        "rxjs-pipeable-operators-only": true,
+        "rxjs-no-static-observable-methods": true,
+        "rxjs-proper-imports": true,
+        "use-pipe-transform-interface": true
     }
 }

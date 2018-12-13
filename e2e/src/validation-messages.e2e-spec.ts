@@ -1,6 +1,7 @@
-import { AppPage, TestCase } from './app.po';
-import { browser } from 'protractor';
+import { AppPage } from './app.po';
 
+const required = 'required: true';
+const requiredTitle = 'required: Title';
 describe('rt-validation-messages ->', () => {
   let page: AppPage;
 
@@ -20,11 +21,11 @@ describe('rt-validation-messages ->', () => {
   it( 'ngModel -> should display default validation message after change', async () => {
     const testCase = page.getTestCase('rt-validation-messages -> ngModel');
 
-    await testCase.setTitle('title')
-    await testCase.setTitle('')
+    await testCase.setTitle('title');
+    await testCase.setTitle('');
 
     const validationMessage = await testCase.getValidationMessage().getText();
-    expect(validationMessage).toBeTruthy('required: true');
+    expect(validationMessage).toBeTruthy(required);
   });
 
   it( 'formControlName -> should not display validation message by default ', async () => {
@@ -38,11 +39,11 @@ describe('rt-validation-messages ->', () => {
   it( 'formControlName -> should display default validation message after change', async () => {
     const testCase = page.getTestCase('rt-validation-messages -> formControlName');
 
-    await testCase.setTitle('title')
-    await testCase.setTitle('')
+    await testCase.setTitle('title');
+    await testCase.setTitle('');
     const validationMessage = await testCase.getValidationMessage().getText();
-    
-    expect(validationMessage).toBeTruthy('required: true');
+
+    expect(validationMessage).toBeTruthy(required);
   });
 
   it( 'formControl -> should not display validation message by default ', async () => {
@@ -56,11 +57,11 @@ describe('rt-validation-messages ->', () => {
   it( 'formControl -> should display default validation message after change', async () => {
     const testCase = page.getTestCase('rt-validation-messages -> formControl');
 
-    await testCase.setTitle('title')
-    await testCase.setTitle('')
+    await testCase.setTitle('title');
+    await testCase.setTitle('');
 
     const validationMessage = await testCase.getValidationMessage().getText();
-    expect(validationMessage).toBeTruthy('required: true');
+    expect(validationMessage).toBeTruthy(required);
   });
 
   it( 'formGroup -> should not display validation message by default ', async () => {
@@ -74,8 +75,8 @@ describe('rt-validation-messages ->', () => {
   it( 'formGroup -> should display default validation message after change', async () => {
     const testCase = page.getTestCase('rt-validation-messages -> formGroup');
 
-    await testCase.setTitle('title')
-    await testCase.setTitle('')
+    await testCase.setTitle('title');
+    await testCase.setTitle('');
 
     const validationMessage = await testCase.getValidationMessage().getText();
     expect(validationMessage).toBeTruthy('formGroupValidator: true');
@@ -84,8 +85,8 @@ describe('rt-validation-messages ->', () => {
   it( 'shows custom message', async () => {
     const testCase = page.getTestCase('rt-validation-messages -> shows custom message');
 
-    await testCase.setTitle('title')
-    await testCase.setTitle('')
+    await testCase.setTitle('title');
+    await testCase.setTitle('');
 
     const validationMessage = await testCase.getValidationMessage().getText();
     expect(validationMessage).toBeTruthy('Field is required');
@@ -93,30 +94,30 @@ describe('rt-validation-messages ->', () => {
   it( 'shows message with custom parameters', async () => {
     const testCase = page.getTestCase('rt-validation-messages -> shows message with custom parameters');
 
-    await testCase.setTitle('title')
-    await testCase.setTitle('')
+    await testCase.setTitle('title');
+    await testCase.setTitle('');
 
     const validationMessage = await testCase.getValidationMessage().getText();
-    expect(validationMessage).toBeTruthy('required: Title');
+    expect(validationMessage).toBeTruthy(requiredTitle);
   });
   it( 'shows message in custom template', async () => {
     const testCase = page.getTestCase('rt-validation-messages -> shows message in custom template');
 
-    await testCase.setTitle('title')
-    await testCase.setTitle('')
+    await testCase.setTitle('title');
+    await testCase.setTitle('');
 
     const validationMessage = await testCase.getCustomTemplateMessage().getText();
-    expect(validationMessage).toBeTruthy('required: Title');
+    expect(validationMessage).toBeTruthy(requiredTitle);
   });
   it( 'shows message in custom inline template', async () => {
     const testCase = page.getTestCase('rt-validation-messages -> shows message in custom inline template');
 
-    await testCase.setTitle('title')
-    await testCase.setTitle('')
+    await testCase.setTitle('title');
+    await testCase.setTitle('');
 
     const validationMessage = await testCase.getCustomTemplateMessage().getText();
-    expect(validationMessage).toBeTruthy('required: Title');
+    expect(validationMessage).toBeTruthy(requiredTitle);
   });
-  
+
 });
 

@@ -15,11 +15,11 @@ export class ValidationMessagesComponent {
     @ContentChildren(ValidationMessageDirective)
     public messages: QueryList<ValidationMessageDirective>;
 
-    constructor(@Optional() private form: NgForm, private messageProvider: ValidationMessageService) {
+    constructor(@Optional() private readonly form: NgForm, private readonly messageProvider: ValidationMessageService) {
 
     }
 
-    public shouldShowValidationMessages() : boolean {
+    public shouldShowValidationMessages(): boolean {
         return this.messageProvider.shouldShowValidationMessages(this.control ? this.control : undefined, this.form);
     }
 
@@ -56,8 +56,9 @@ export class ValidationMessagesComponent {
 
     public getMessage({ key: validator, value: parameters }): string {
         if (this.hasCustomMessage(validator)) {
-            return this.getCustomMessage(validator)
+            return this.getCustomMessage(validator);
         }
-        return this.messageProvider.getMessage(validator, this.hasCustomParameters(validator) ? this.getParameters(validator) : parameters, this.control)
+        const params = this.hasCustomParameters(validator) ? this.getParameters(validator) : parameters;
+        return this.messageProvider.getMessage(validator, params, this.control);
     }
 }

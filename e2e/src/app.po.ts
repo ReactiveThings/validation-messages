@@ -14,11 +14,10 @@ export class AppPage {
   }
 }
 
-class E2EHelpers
-{
+class E2EHelpers {
   public static async clearInputValue(input: ElementFinder) {
-    while(await input.getAttribute('value') != '') {
-      await input.sendKeys(Key.BACK_SPACE)
+    while (await input.getAttribute('value') !== '') {
+      await input.sendKeys(Key.BACK_SPACE);
     }
   }
   public static async changeInputValue(input: ElementFinder, value: string) {
@@ -27,10 +26,9 @@ class E2EHelpers
   }
 }
 
-export class TestCase
-{
+export class TestCase {
   constructor(private testCase: ElementFinder) {
-    
+
   }
 
   assertIsPresent() {
@@ -43,13 +41,13 @@ export class TestCase
 
   async setTitle(title: string) {
     const titleInput = this.getTitleInput();
-    await E2EHelpers.changeInputValue(titleInput,title);
+    await E2EHelpers.changeInputValue(titleInput, title);
   }
 
-  getValidationMessage() : ElementFinder {
+  getValidationMessage(): ElementFinder {
     return this.testCase.element(by.css('.rt-validation-message'));
   }
-  getCustomTemplateMessage() : ElementFinder {
+  getCustomTemplateMessage(): ElementFinder {
     return this.testCase.element(by.css('.rt-custom-template-message'));
   }
 }

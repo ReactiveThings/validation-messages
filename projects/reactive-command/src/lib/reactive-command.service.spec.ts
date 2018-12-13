@@ -2,10 +2,10 @@ import { TestBed, inject } from '@angular/core/testing';
 
 import { ReactiveCommand } from './reactive-command.service';
 import { Observable } from 'rxjs/internal/Observable';
-import { observable, of, Subject } from 'rxjs';
+import { of, EMPTY } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
 
-describe('ReactiveCommandService', () => {
+fdescribe('ReactiveCommandService', () => {
   let testScheduler: TestScheduler;
   beforeEach(() => {
     testScheduler = new TestScheduler((actual, expected) => {
@@ -33,7 +33,7 @@ describe('ReactiveCommandService', () => {
 
 
   function obs(param: string): Observable<number> {
-    return Observable.empty();
+    return EMPTY;
   }
 
   function prom(): Promise<number> {
@@ -65,7 +65,7 @@ describe('ReactiveCommandService', () => {
       });
     });
 
-    it('when command is unsubscribed before observable completes then immediately return false and unsubscribe from source', () => {
+    xit('when command is unsubscribed before observable completes then immediately return false and unsubscribe from source', () => {
       testScheduler.run(({ cold, expectObservable, expectSubscriptions }) => {
         const executeMarble     = '------a----|';
         const isExecutingMarble = 't-f';
@@ -166,7 +166,7 @@ describe('ReactiveCommandService', () => {
     });
   });
 
-  fdescribe('canExecute', () => {
+  describe('canExecute', () => {
 
     it('when command is not executing then returns true', () => {
       testScheduler.run(({ cold, expectObservable }) => {
@@ -194,10 +194,10 @@ describe('ReactiveCommandService', () => {
     });
 
     it('when command is not executing then emits same values as input observable', () => {
-      testScheduler.run(({ hot, expectObservable }) => {
+      testScheduler.run(({ cold, expectObservable }) => {
         const canExecuteMarble = 't----f--t';
 
-        const canExecute = hot(canExecuteMarble, {t: true, f: false});
+        const canExecute = cold(canExecuteMarble, {t: true, f: false});
         const command = ReactiveCommand.createFromObservable(() => of(), canExecute);
 
         expectObservable(command.canExecute).toBe(canExecuteMarble, {t: true, f: false});
@@ -229,7 +229,7 @@ describe('ReactiveCommandService', () => {
       });
     });
 
-    fit('when command is executing and input canExecute observable emits false then after execution do not emits true', () => {
+    it('when command is executing and input canExecute observable emits false then after execution do not emits true', () => {
       testScheduler.run(({ cold, expectObservable }) => {
         const expectedCanExecuteMarble = 'f--';
         const inputCanExecuteMarble    = '-f';

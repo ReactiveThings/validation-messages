@@ -1,4 +1,12 @@
-import { Component, OnInit, ContentChild, ContentChildren, QueryList, ViewChild, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  ContentChild,
+  ContentChildren,
+  QueryList, ViewChild,
+  ChangeDetectorRef,
+  AfterContentInit,
+  AfterViewInit
+} from '@angular/core';
 import { NgModel, FormControlName, FormControl, FormControlDirective, AbstractControl, NgControl } from '@angular/forms';
 import { ValidationMessageDirective } from '../validation-message.directive';
 import { ValidationMessagesComponent } from '../validation-messages/validation-messages.component';
@@ -8,7 +16,7 @@ import { ValidationMessagesComponent } from '../validation-messages/validation-m
   templateUrl: './validation-container.component.html',
   styleUrls: ['./validation-container.component.css']
 })
-export class ValidationContainerComponent{
+export class ValidationContainerComponent implements AfterContentInit, AfterViewInit {
   @ContentChild(NgModel)
   public ngModel: NgModel;
 
@@ -30,20 +38,20 @@ export class ValidationContainerComponent{
   constructor(private changeDetectorRef: ChangeDetectorRef) { }
 
   public ngAfterContentInit() {
-    if(this.customMessagesComponent) {
+    if (this.customMessagesComponent) {
       this.customMessagesComponent.control = this.getControl().control;
     }
 
   }
 
   public ngAfterViewInit() {
-    if(!this.customMessagesComponent) {
+    if (!this.customMessagesComponent) {
       this.messagesComponent.messages = this.messages;
     }
-    
+
   }
 
-  public getControl() : NgControl {
+  public getControl(): NgControl {
     return this.ngModel !== undefined ? this.ngModel : this.controlName !== undefined ? this.controlName : this.formControl;
   }
 
